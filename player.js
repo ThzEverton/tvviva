@@ -14,12 +14,12 @@ new QRCode(document.querySelector('#pair-qr'),{text:pairUrl,width:qrSize,height:
 let playing=false,mediaTimer,currentSignature='';
 function showPairing(message){document.querySelector('#pairing').style.display='flex';const waiting=document.querySelector('.waiting');if(message)waiting.innerHTML=`<i></i> ${message}`}
 function play(items){
-  const signature=items.map(x=>`${x.id}:${x.url}`).join('|');if(playing&&signature===currentSignature)return;clearTimeout(mediaTimer);playing=true;currentSignature=signature;let index=0,failures=0;
+  const signature=items.map(x=>`${x.id}:${x.url}:${x.duration}`).join('|');if(playing&&signature===currentSignature)return;clearTimeout(mediaTimer);playing=true;currentSignature=signature;let index=0,failures=0;
   const next=()=>{clearTimeout(mediaTimer);const item=items[index++%items.length],layer=document.querySelector('#media-layer');layer.innerHTML='';
     const success=()=>{failures=0;document.querySelector('#pairing').style.display='none'};
     const failed=()=>{failures++;if(failures>=items.length){playing=false;layer.innerHTML='';showPairing('Conteúdo indisponível');return}mediaTimer=setTimeout(next,500)};
     const el=document.createElement(item.type==='video'?'video':'img');el.className='media-enter';el.src=item.url;
-    if(item.type==='video'){el.autoplay=true;el.muted=true;el.playsInline=true;el.oncanplay=success;el.onended=next;el.onerror=failed}else{el.onload=success;el.onerror=failed;mediaTimer=setTimeout(next,10000)}
+    if(item.type==='video'){el.autoplay=true;el.muted=true;el.playsInline=true;el.oncanplay=success;el.onended=next;el.onerror=failed}else{el.onload=()=>{success();mediaTimer=setTimeout(next,Math.min(3600,Math.max(1,Number(item.duration)||10))*1000)};el.onerror=failed}
     layer.appendChild(el);
   };next();
 }

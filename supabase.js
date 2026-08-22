@@ -56,7 +56,10 @@ export async function loadCloudState() {
     workspace:workspaces[0],
     screens: screens.map(s => ({ id:s.id, code:s.device_code, name:s.name || `Tela ${s.device_code}`, location:s.location, online:Date.now()-new Date(s.last_seen).getTime()<60000, playlistId:s.playlist_id, playlist:playlists.find(p=>p.id===s.playlist_id)?.name || 'Sem playlist', seen:'Sincronizada' })),
     media: media.map(m => ({ id:m.id, name:m.name, type:m.type, url:m.url, storagePath:m.storage_path, size:m.size_bytes || 0 })),
-    playlists: playlists.map(p => ({ id:p.id, name:p.name, items:items.filter(i=>i.playlist_id===p.id).map(i=>i.media_id), screens:screens.filter(s=>s.playlist_id===p.id).length }))
+    playlists: playlists.map(p => {
+      const playlistItems=items.filter(i=>i.playlist_id===p.id);
+      return {id:p.id,name:p.name,items:playlistItems.map(i=>i.media_id),durations:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.duration_seconds||10])),screens:screens.filter(s=>s.playlist_id===p.id).length};
+    })
   };
 }
 
@@ -66,6 +69,6 @@ export async function savePlaylist(playlist) {
   const saved = playlist.id?.startsWith('p') ? await api.insert('playlists', row) : await api.upsert('playlists', row);
   const id = saved[0].id;
   await api.remove('playlist_items', `playlist_id=eq.${id}`);
-  if (playlist.items.length) await api.insert('playlist_items', playlist.items.map((media_id, position)=>({playlist_id:id,media_id,position,duration_seconds:10})));
+  if (playlist.items.length) await api.insert('playlist_items', playlist.items.map((media_id, position)=>({playlist_id:id,media_id,position,duration_seconds:Math.min(3600,Math.max(1,Number(playlist.durations?.[media_id])||10))})));
   return id;
 }

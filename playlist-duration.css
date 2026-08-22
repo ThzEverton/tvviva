@@ -1,0 +1,23 @@
+.picker-duration,
+.picker-auto {
+  display: none;
+  margin: 0 6px 7px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.picker-item.selected .picker-duration,
+.picker-item.selected .picker-auto {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.picker-duration input {
+  width: 54px;
+  padding: 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
