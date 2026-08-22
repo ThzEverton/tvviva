@@ -1,0 +1,11 @@
+node_modules
+.git
+.vercel
+.env*
+.edge-headless*
+.chrome-headless*
+*-preview.png
+player-test.png
+supabase/*.sql
+SECURITY.md
+DEPLOY.md

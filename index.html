@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <meta name="description" content="Gerencie conteúdos, playlists e TVs em um só lugar.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest">
+  <title>TelaViva — Mídia para suas telas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  <style>body.session-loading .sidebar,body.session-loading .main{visibility:hidden}</style>
+</head>
+<body class="session-loading">
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="TelaViva">
+      <span class="brand-mark"><span></span></span>
+      <span>Tela<span>Viva</span></span>
+    </a>
+    <nav class="nav" aria-label="Menu principal">
+      <button class="nav-item active" data-view="overview"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></button>
+      <button class="nav-item" data-view="screens"><i data-lucide="monitor"></i><span>Minhas telas</span><b id="screen-count-nav">0</b></button>
+      <button class="nav-item" data-view="media"><i data-lucide="image"></i><span>Conteúdos</span></button>
+      <button class="nav-item" data-view="playlists"><i data-lucide="list-video"></i><span>Playlists</span></button>
+    </nav>
+    <div class="side-bottom">
+      <div class="usage-card">
+        <span><i data-lucide="cloud"></i> Armazenamento</span>
+        <div class="usage-track"><span id="usage-bar"></span></div>
+        <small id="usage-label">0 MB de 1 GB</small>
+      </div>
+      <button class="nav-item" id="settings-btn"><i data-lucide="settings"></i><span>Configurações</span></button>
+      <div class="profile">
+        <div class="avatar">TV</div>
+        <div><strong>Meu espaço</strong><small id="mode-label">Carregando...</small></div>
+        <i data-lucide="chevrons-up-down"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="mobile-brand"><span class="brand-mark"><span></span></span>TelaViva</div>
+      <div class="status-pill"><span></span><b id="online-count">0</b> telas online</div>
+      <div class="top-actions">
+        <button class="icon-btn" title="Ajuda"><i data-lucide="circle-help"></i></button>
+        <button class="icon-btn" title="Notificações"><i data-lucide="bell"></i><span class="notification-dot"></span></button>
+        <button class="mobile-menu icon-btn"><i data-lucide="menu"></i></button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="view active" id="view-overview">
+        <div class="page-head">
+          <div><p class="eyebrow">PAINEL DE CONTROLE</p><h1>Boa exibição <span>✦</span></h1><p>Acompanhe suas telas e mantenha tudo rodando.</p></div>
+          <button class="primary" data-action="connect"><i data-lucide="scan-line"></i> Conectar nova tela</button>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card lime"><div class="stat-icon"><i data-lucide="monitor-play"></i></div><div><small>Telas ativas</small><strong id="stat-screens">0</strong><p><span class="pulse"></span> <b id="stat-online">0 online agora</b></p></div></article>
+          <article class="stat-card"><div class="stat-icon"><i data-lucide="gallery-horizontal-end"></i></div><div><small>Conteúdos</small><strong id="stat-media">0</strong><p>fotos e vídeos</p></div></article>
+          <article class="stat-card"><div class="stat-icon"><i data-lucide="list-video"></i></div><div><small>Playlists</small><strong id="stat-playlists">0</strong><p>em sua biblioteca</p></div></article>
+          <article class="stat-card"><div class="stat-icon"><i data-lucide="refresh-cw"></i></div><div><small>Sincronização</small><strong id="stat-hours">5s</strong><p>atualização automática</p></div></article>
+        </div>
+        <div class="dashboard-grid">
+          <section class="panel recent-panel">
+            <div class="panel-title"><div><h2>Suas telas</h2><p>Status em tempo real</p></div><button class="text-btn" data-goto="screens">Ver todas <i data-lucide="arrow-up-right"></i></button></div>
+            <div id="recent-screens" class="screen-list"></div>
+          </section>
+          <section class="quick-card">
+            <div class="quick-art"><div class="screen-art"><span>TelaViva</span><div></div></div><span class="signal s1"></span><span class="signal s2"></span></div>
+            <p class="eyebrow">COMECE EM MINUTOS</p><h2>Leve sua mensagem<br>para qualquer tela.</h2><p>Abra o player na TV, leia o QR Code e publique seu conteúdo.</p>
+            <button class="dark-btn" data-action="connect">Conectar uma tela <i data-lucide="arrow-right"></i></button>
+          </section>
+        </div>
+        <section class="panel activity-panel">
+          <div class="panel-title"><div><h2>Atividade recente</h2><p>O que aconteceu no seu espaço</p></div></div>
+          <div id="activity-list" class="activity-list"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-screens">
+        <div class="page-head"><div><p class="eyebrow">DISPOSITIVOS</p><h1>Minhas telas</h1><p>Gerencie cada ponto de exibição.</p></div><button class="primary" data-action="connect"><i data-lucide="plus"></i> Nova tela</button></div>
+        <div class="toolbar"><div class="search"><i data-lucide="search"></i><input id="screen-search" placeholder="Buscar por nome ou local" /></div><div class="segmented"><button class="active" data-screen-filter="all">Todas</button><button data-screen-filter="online">Online</button><button data-screen-filter="offline">Offline</button></div></div>
+        <div id="screens-grid" class="cards-grid"></div>
+      </section>
+
+      <section class="view" id="view-media">
+        <div class="page-head"><div><p class="eyebrow">BIBLIOTECA</p><h1>Conteúdos</h1><p>Fotos e vídeos prontos para entrar no ar.</p></div><button class="primary" data-action="media"><i data-lucide="upload"></i> Adicionar conteúdo</button></div>
+        <div class="toolbar"><div class="search"><i data-lucide="search"></i><input id="media-search" placeholder="Buscar conteúdo" /></div><div class="segmented"><button class="active" data-media-filter="all">Todos</button><button data-media-filter="image">Fotos</button><button data-media-filter="video">Vídeos</button></div></div>
+        <div id="media-grid" class="media-grid"></div>
+      </section>
+
+      <section class="view" id="view-playlists">
+        <div class="page-head"><div><p class="eyebrow">PROGRAMAÇÃO</p><h1>Playlists</h1><p>Organize a sequência que passa nas suas telas.</p></div><button class="primary" data-action="playlist"><i data-lucide="plus"></i> Nova playlist</button></div>
+        <div id="playlists-grid" class="playlist-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast-stack" id="toast-stack"></div>
+  <div class="modal-backdrop" id="modal-root" aria-hidden="true"></div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" integrity="sha384-uTYyvsSSUZeaPhb5RbKlQa0zY/WpX/QHfvg2mczXyBQOpkWPEDy9lczyp+w7SKXu" crossorigin="anonymous"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

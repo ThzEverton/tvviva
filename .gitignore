@@ -1,0 +1,11 @@
+node_modules/
+.vercel/
+.env
+.env.*
+!.env.example
+.edge-headless*/
+.chrome-headless*/
+*-preview.png
+player-test.png
+npm-debug.log*
+

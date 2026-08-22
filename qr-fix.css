@@ -1,0 +1,2 @@
+.qr-card #pair-qr{width:100%;aspect-ratio:1;display:grid;place-items:center;overflow:hidden}
+.qr-card #pair-qr img,.qr-card #pair-qr canvas{display:block;width:100%!important;height:100%!important;object-fit:contain}
