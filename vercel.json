@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/tv", "destination": "/player.html" },
+    { "source": "/tv", "destination": "/player" },
     { "source": "/player", "destination": "/player.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/reset-password", "destination": "/reset-password.html" }
