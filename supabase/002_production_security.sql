@@ -176,7 +176,8 @@ as $$ declare s public.screens; payload jsonb; begin
   select * into s from public.screens where device_code=upper(p_device_code);
   if s.id is null or s.device_secret_hash is null or encode(extensions.digest(p_device_secret,'sha256'),'hex')<>s.device_secret_hash then raise exception 'unauthorized_device'; end if;
   update public.screens set last_seen=now() where id=s.id;
-  if s.status<>'connected' or s.playlist_id is null then return jsonb_build_object('paired',false,'items','[]'::jsonb); end if;
+  if s.status<>'connected' then return jsonb_build_object('paired',false,'items','[]'::jsonb); end if;
+  if s.playlist_id is null then return jsonb_build_object('paired',true,'items','[]'::jsonb); end if;
   select coalesce(jsonb_agg(jsonb_build_object('id',m.id,'name',m.name,'type',m.type,'url',m.url,'duration',pi.duration_seconds) order by pi.position),'[]'::jsonb) into payload
   from public.playlist_items pi join public.media_items m on m.id=pi.media_id where pi.playlist_id=s.playlist_id and m.workspace_id=s.workspace_id;
   return jsonb_build_object('paired',true,'playlist_id',s.playlist_id,'items',payload);

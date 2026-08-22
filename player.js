@@ -13,6 +13,7 @@ const qrSize=Math.min(420,Math.max(180,Math.floor(window.innerWidth*.23)));
 new QRCode(document.querySelector('#pair-qr'),{text:pairUrl,width:qrSize,height:qrSize,colorDark:'#111711',colorLight:'#f8faf4',correctLevel:QRCode.CorrectLevel.M});
 let playing=false,mediaTimer,currentSignature='';
 function showPairing(message){document.querySelector('#pairing').style.display='flex';const waiting=document.querySelector('.waiting');if(message)waiting.innerHTML=`<i></i> ${message}`}
+function showConnectedEmpty(){clearTimeout(mediaTimer);playing=false;document.querySelector('#media-layer').innerHTML='';document.querySelector('#pairing').style.display='flex';document.querySelector('.pair-content h1').innerHTML='Tela conectada,<br><span>aguardando conteúdo.</span>';document.querySelector('.pair-content>div>p:not(.eyebrow)').textContent='Crie uma playlist no painel e use Configurar TV para exibi-la nesta tela.';document.querySelector('.steps').style.display='none';document.querySelector('.qr-card').style.display='none';document.querySelector('.waiting').innerHTML='<i></i> Conectada ao painel'}
 function play(items){
   const signature=items.map(x=>`${x.id}:${x.url}:${x.duration}`).join('|');if(playing&&signature===currentSignature)return;clearTimeout(mediaTimer);playing=true;currentSignature=signature;let index=0,failures=0;
   const next=()=>{clearTimeout(mediaTimer);const item=items[index++%items.length],layer=document.querySelector('#media-layer');layer.innerHTML='';
@@ -33,7 +34,7 @@ async function checkCloud(){
   try{
     if(!registered){await api.rpc('register_screen',{p_device_code:code,p_device_secret:deviceSecret});registered=true}
     const payload=await api.rpc('player_content',{p_device_code:code,p_device_secret:deviceSecret});
-    if(payload?.paired&&payload.items?.length)play(payload.items);else if(!playing)showPairing('Aguardando conexão');
+    if(payload?.paired&&payload.items?.length)play(payload.items);else if(payload?.paired)showConnectedEmpty();else if(!playing)showPairing('Aguardando conexão');
     document.querySelector('#offline-note').classList.remove('show');
   }catch(e){
     if(String(e?.message||e).includes('unauthorized_device')){resetDevice();return}
