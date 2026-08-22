@@ -27,6 +27,7 @@ alter table public.playlists add column if not exists created_by uuid references
 alter table public.screens add column if not exists workspace_id uuid references public.workspaces(id) on delete cascade;
 alter table public.screens add column if not exists device_secret_hash text;
 alter table public.screens add column if not exists paired_at timestamptz;
+alter table public.playlist_items add column if not exists fit_mode text not null default 'cover';
 
 create index if not exists media_workspace_idx on public.media_items(workspace_id);
 create index if not exists playlists_workspace_idx on public.playlists(workspace_id);
@@ -178,7 +179,7 @@ as $$ declare s public.screens; payload jsonb; begin
   update public.screens set last_seen=now() where id=s.id;
   if s.status<>'connected' then return jsonb_build_object('paired',false,'items','[]'::jsonb); end if;
   if s.playlist_id is null then return jsonb_build_object('paired',true,'items','[]'::jsonb); end if;
-  select coalesce(jsonb_agg(jsonb_build_object('id',m.id,'name',m.name,'type',m.type,'url',m.url,'duration',pi.duration_seconds) order by pi.position),'[]'::jsonb) into payload
+  select coalesce(jsonb_agg(jsonb_build_object('id',m.id,'name',m.name,'type',m.type,'url',m.url,'duration',pi.duration_seconds,'fit',pi.fit_mode) order by pi.position),'[]'::jsonb) into payload
   from public.playlist_items pi join public.media_items m on m.id=pi.media_id where pi.playlist_id=s.playlist_id and m.workspace_id=s.workspace_id;
   return jsonb_build_object('paired',true,'playlist_id',s.playlist_id,'items',payload);
 end $$;

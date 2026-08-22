@@ -58,7 +58,7 @@ export async function loadCloudState() {
     media: media.map(m => ({ id:m.id, name:m.name, type:m.type, url:m.url, storagePath:m.storage_path, size:m.size_bytes || 0 })),
     playlists: playlists.map(p => {
       const playlistItems=items.filter(i=>i.playlist_id===p.id);
-      return {id:p.id,name:p.name,items:playlistItems.map(i=>i.media_id),durations:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.duration_seconds||10])),screens:screens.filter(s=>s.playlist_id===p.id).length};
+      return {id:p.id,name:p.name,items:playlistItems.map(i=>i.media_id),durations:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.duration_seconds||10])),fits:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.fit_mode||'cover'])),screens:screens.filter(s=>s.playlist_id===p.id).length};
     })
   };
 }
@@ -69,6 +69,12 @@ export async function savePlaylist(playlist) {
   const saved = playlist.id?.startsWith('p') ? await api.insert('playlists', row) : await api.upsert('playlists', row);
   const id = saved[0].id;
   await api.remove('playlist_items', `playlist_id=eq.${id}`);
-  if (playlist.items.length) await api.insert('playlist_items', playlist.items.map((media_id, position)=>({playlist_id:id,media_id,position,duration_seconds:Math.min(3600,Math.max(1,Number(playlist.durations?.[media_id])||10))})));
+  if (playlist.items.length) {
+    const rows=playlist.items.map((media_id, position)=>({playlist_id:id,media_id,position,duration_seconds:Math.min(3600,Math.max(1,Number(playlist.durations?.[media_id])||10)),fit_mode:['cover','contain','fill'].includes(playlist.fits?.[media_id])?playlist.fits[media_id]:'cover'}));
+    try{await api.insert('playlist_items',rows)}catch(error){
+      if(!String(error.message).includes('fit_mode'))throw error;
+      await api.insert('playlist_items',rows.map(({fit_mode,...row})=>row));
+    }
+  }
   return id;
 }

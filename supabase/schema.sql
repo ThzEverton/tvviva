@@ -27,6 +27,7 @@ create table if not exists public.playlist_items (
   media_id uuid not null references public.media_items(id) on delete cascade,
   position integer not null default 0,
   duration_seconds integer not null default 10,
+  fit_mode text not null default 'cover' check (fit_mode in ('cover','contain','fill')),
   unique (playlist_id, position)
 );
 

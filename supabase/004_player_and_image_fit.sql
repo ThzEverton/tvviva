@@ -1,5 +1,5 @@
--- Corrige as funcoes do player em projetos Supabase onde pgcrypto vive no schema extensions.
--- Execute este arquivo no SQL Editor do Supabase depois de 002_production_security.sql.
+-- Hotfix consolidado do player: criptografia, pareamento e dimensionamento de imagens.
+-- Pode ser executado mesmo que o hotfix 003 ainda nao tenha sido aplicado.
 
 create extension if not exists pgcrypto with schema extensions;
 alter table public.playlist_items add column if not exists fit_mode text not null default 'cover';

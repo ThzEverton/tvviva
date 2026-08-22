@@ -1,4 +1,5 @@
 .picker-duration,
+.picker-fit,
 .picker-auto {
   display: none;
   margin: 0 6px 7px;
@@ -7,6 +8,7 @@
 }
 
 .picker-item.selected .picker-duration,
+.picker-item.selected .picker-fit,
 .picker-item.selected .picker-auto {
   display: flex;
   align-items: center;
@@ -16,6 +18,26 @@
 .picker-duration input {
   width: 54px;
   padding: 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
+
+.picker-item .picker-controls {
+  display: grid;
+  height: auto;
+  background: transparent;
+}
+
+.picker-fit {
+  align-items: flex-start !important;
+  flex-direction: column;
+}
+
+.picker-fit select {
+  width: 100%;
+  padding: 5px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: #fff;

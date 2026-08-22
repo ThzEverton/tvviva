@@ -15,11 +15,11 @@ let playing=false,mediaTimer,currentSignature='';
 function showPairing(message){document.querySelector('#pairing').style.display='flex';const waiting=document.querySelector('.waiting');if(message)waiting.innerHTML=`<i></i> ${message}`}
 function showConnectedEmpty(){clearTimeout(mediaTimer);playing=false;document.querySelector('#media-layer').innerHTML='';document.querySelector('#pairing').style.display='flex';document.querySelector('.pair-content h1').innerHTML='Tela conectada,<br><span>aguardando conteúdo.</span>';document.querySelector('.pair-content>div>p:not(.eyebrow)').textContent='Crie uma playlist no painel e use Configurar TV para exibi-la nesta tela.';document.querySelector('.steps').style.display='none';document.querySelector('.qr-card').style.display='none';document.querySelector('.waiting').innerHTML='<i></i> Conectada ao painel'}
 function play(items){
-  const signature=items.map(x=>`${x.id}:${x.url}:${x.duration}`).join('|');if(playing&&signature===currentSignature)return;clearTimeout(mediaTimer);playing=true;currentSignature=signature;let index=0,failures=0;
+  const signature=items.map(x=>`${x.id}:${x.url}:${x.duration}:${x.fit}`).join('|');if(playing&&signature===currentSignature)return;clearTimeout(mediaTimer);playing=true;currentSignature=signature;let index=0,failures=0;
   const next=()=>{clearTimeout(mediaTimer);const item=items[index++%items.length],layer=document.querySelector('#media-layer');layer.innerHTML='';
     const success=()=>{failures=0;document.querySelector('#pairing').style.display='none'};
     const failed=()=>{failures++;if(failures>=items.length){playing=false;layer.innerHTML='';showPairing('Conteúdo indisponível');return}mediaTimer=setTimeout(next,500)};
-    const el=document.createElement(item.type==='video'?'video':'img');el.className='media-enter';el.src=item.url;
+    const el=document.createElement(item.type==='video'?'video':'img');el.className='media-enter';el.src=item.url;el.style.objectFit=['cover','contain','fill'].includes(item.fit)?item.fit:'cover';
     if(item.type==='video'){el.autoplay=true;el.muted=true;el.playsInline=true;el.oncanplay=success;el.onended=next;el.onerror=failed}else{el.onload=()=>{success();mediaTimer=setTimeout(next,Math.min(3600,Math.max(1,Number(item.duration)||10))*1000)};el.onerror=failed}
     layer.appendChild(el);
   };next();
