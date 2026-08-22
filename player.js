@@ -2,7 +2,8 @@ import './config.js';
 import { api, cloudEnabled } from './supabase.js';
 const params=new URLSearchParams(location.search);
 let code=params.get('device')||localStorage.getItem('telaviva-device-code');
-if(!code){code=Math.random().toString(36).slice(2,8).toUpperCase();localStorage.setItem('telaviva-device-code',code)}
+function createCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=crypto.getRandomValues(new Uint8Array(6));return [...bytes].map(value=>chars[value%chars.length]).join('')}
+if(!code){code=createCode();localStorage.setItem('telaviva-device-code',code)}
 let deviceSecret=localStorage.getItem('telaviva-device-secret');
 if(!deviceSecret){const bytes=crypto.getRandomValues(new Uint8Array(24));deviceSecret=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('telaviva-device-secret',deviceSecret)}
 document.querySelector('#device-code').textContent=code;
@@ -23,12 +24,22 @@ function play(items){
   };next();
 }
 let registered=false;
+function resetDevice(){
+  localStorage.removeItem('telaviva-device-code');
+  localStorage.removeItem('telaviva-device-secret');
+  location.replace('/tv');
+}
 async function checkCloud(){
   try{
     if(!registered){await api.rpc('register_screen',{p_device_code:code,p_device_secret:deviceSecret});registered=true}
     const payload=await api.rpc('player_content',{p_device_code:code,p_device_secret:deviceSecret});
     if(payload?.paired&&payload.items?.length)play(payload.items);else if(!playing)showPairing('Aguardando conexão');
     document.querySelector('#offline-note').classList.remove('show');
-  }catch(e){document.querySelector('#offline-note').classList.add('show')}
+  }catch(e){
+    if(String(e?.message||e).includes('unauthorized_device')){resetDevice();return}
+    const note=document.querySelector('#offline-note');
+    note.textContent=String(e?.message||e).includes('rate_limited')?'Muitas tentativas · aguarde um minuto':'Sem conexão · tentando novamente';
+    note.classList.add('show');
+  }
 }
 if(cloudEnabled){checkCloud();setInterval(checkCloud,5000)}else{showPairing('Configuração indisponível');document.querySelector('#offline-note').classList.add('show')}
