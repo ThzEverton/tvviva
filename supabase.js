@@ -65,9 +65,16 @@ export async function loadCloudState() {
 
 export async function savePlaylist(playlist) {
   const userId=getStoredSession()?.user?.id;
-  const row = playlist.id?.startsWith('p') ? { name:playlist.name,workspace_id:_workspaceId,created_by:userId } : { id:playlist.id, name:playlist.name,workspace_id:_workspaceId,updated_at:new Date().toISOString() };
-  const saved = playlist.id?.startsWith('p') ? await api.insert('playlists', row) : await api.upsert('playlists', row);
-  const id = saved[0].id;
+  const isNew=playlist.id?.startsWith('p');
+  let id;
+  if(isNew){
+    const saved=await api.insert('playlists',{name:playlist.name,workspace_id:_workspaceId,created_by:userId});
+    id=saved[0].id;
+  }else{
+    const updated=await api.update('playlists',`id=eq.${playlist.id}`,{name:playlist.name,updated_at:new Date().toISOString()});
+    if(!updated?.length)throw new Error('Playlist não encontrada ou sem permissão para editar');
+    id=playlist.id;
+  }
   await api.remove('playlist_items', `playlist_id=eq.${id}`);
   if (playlist.items.length) {
     const rows=playlist.items.map((media_id, position)=>({playlist_id:id,media_id,position,duration_seconds:Math.min(3600,Math.max(1,Number(playlist.durations?.[media_id])||10)),fit_mode:['cover','contain','fill'].includes(playlist.fits?.[media_id])?playlist.fits[media_id]:'cover'}));
