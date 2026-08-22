@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="theme-color" content="#090c09">
+  <title>TelaViva Player</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/player.css"><link rel="stylesheet" href="/player-v2.css">
+</head>
+<body><main id="stage"><div id="media-layer"></div><div id="transition-layer"></div>
+  <section id="pairing" class="pairing"><div class="pair-logo"><span class="mark"><i></i></span><b>Tela<span>Viva</span></b></div>
+    <div class="pair-content"><div><p class="eyebrow">CONECTE ESTA TELA</p><h1>Seu conteúdo,<br><span>pronto para entrar no ar.</span></h1><p>Escaneie o QR Code pelo celular para vincular esta TV ao seu painel.</p><div class="steps"><span><b>1</b> Abra a câmera</span><span><b>2</b> Leia o QR Code</span><span><b>3</b> Escolha a playlist</span></div></div>
+      <div class="qr-card"><div id="pair-qr"></div><p>Código da tela</p><strong id="device-code">------</strong></div></div>
+    <div class="pair-footer"><span id="pair-address"></span><span class="waiting"><i></i> Aguardando conexão</span></div>
+  </section><div class="offline-note" id="offline-note">Sem conexão · tentando novamente</div>
+</main><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script><script type="module" src="/player.js"></script></body></html>

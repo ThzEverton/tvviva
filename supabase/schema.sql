@@ -9,6 +9,8 @@ create table if not exists public.media_items (
   type text not null check (type in ('image', 'video')),
   url text not null,
   storage_path text,
+  thumbnail_url text,
+  thumbnail_storage_path text,
   size_bytes bigint default 0,
   duration_seconds integer default 10,
   created_at timestamptz not null default now()
@@ -17,6 +19,11 @@ create table if not exists public.media_items (
 create table if not exists public.playlists (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  start_at timestamptz,
+  end_at timestamptz,
+  active_days smallint[] not null default array[0,1,2,3,4,5,6]::smallint[],
+  daily_start time not null default '00:00',
+  daily_end time not null default '23:59',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

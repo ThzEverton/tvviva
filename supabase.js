@@ -26,14 +26,16 @@ export const api = {
   upsert(table, body, conflict = 'id') { return request(`${table}?on_conflict=${conflict}`, { method: 'POST', body: JSON.stringify(body), headers: { Prefer: 'resolution=merge-duplicates,return=representation' } }); },
   remove(table, query) { return request(`${table}?${query}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } }); },
   rpc(name, body) { return request(`rpc/${name}`, { method:'POST', body:JSON.stringify(body), headers:{Prefer:'return=representation'} }); },
-  async upload(file) {
+  async upload(file,onProgress) {
     if(!_workspaceId)throw new Error('Workspace não carregado');
     const safe = `${_workspaceId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
-    const response = await fetch(`${supabaseUrl}/storage/v1/object/media/${safe}`, {
-      method: 'POST', body: file,
-      headers: { apikey: supabaseKey, Authorization: `Bearer ${getStoredSession()?.access_token||supabaseKey}`, 'Content-Type': file.type, 'x-upsert': 'false' }
+    await new Promise((resolve,reject)=>{
+      const xhr=new XMLHttpRequest();xhr.open('POST',`${supabaseUrl}/storage/v1/object/media/${safe}`);
+      xhr.setRequestHeader('apikey',supabaseKey);xhr.setRequestHeader('Authorization',`Bearer ${getStoredSession()?.access_token||supabaseKey}`);xhr.setRequestHeader('Content-Type',file.type||'application/octet-stream');xhr.setRequestHeader('x-upsert','false');
+      xhr.upload.onprogress=event=>{if(event.lengthComputable)onProgress?.(Math.round(event.loaded/event.total*100))};
+      xhr.onload=()=>xhr.status>=200&&xhr.status<300?resolve():reject(new Error(xhr.responseText||`Upload: ${xhr.status}`));xhr.onerror=()=>reject(new Error('Falha de rede durante o upload'));xhr.send(file);
     });
-    if (!response.ok) throw new Error(await response.text());
+    onProgress?.(100);
     return { path: safe, url: `${supabaseUrl}/storage/v1/object/public/media/${safe}` };
   },
   async removeFile(path){if(!path)return;const response=await fetch(`${supabaseUrl}/storage/v1/object/media/${path}`,{method:'DELETE',headers:{apikey:supabaseKey,Authorization:`Bearer ${getStoredSession()?.access_token||supabaseKey}`}});if(!response.ok)throw new Error(await response.text())}
@@ -43,7 +45,7 @@ let _workspaceId=null;
 export const getWorkspaceId=()=>_workspaceId;
 
 export async function loadCloudState() {
-  const workspaces=await api.select('workspaces','select=id,name,plan&limit=1');
+  const workspaces=await api.select('workspaces','select=*&limit=1');
   if(!workspaces.length)throw new Error('Sua conta ainda não possui um workspace');
   _workspaceId=workspaces[0].id;
   const [screens, media, playlists, items] = await Promise.all([
@@ -55,10 +57,10 @@ export async function loadCloudState() {
   return {
     workspace:workspaces[0],
     screens: screens.map(s => ({ id:s.id, code:s.device_code, name:s.name || `Tela ${s.device_code}`, location:s.location, online:Date.now()-new Date(s.last_seen).getTime()<60000, playlistId:s.playlist_id, playlist:playlists.find(p=>p.id===s.playlist_id)?.name || 'Sem playlist', seen:'Sincronizada' })),
-    media: media.map(m => ({ id:m.id, name:m.name, type:m.type, url:m.url, storagePath:m.storage_path, size:m.size_bytes || 0 })),
+    media: media.map(m => ({ id:m.id, name:m.name, type:m.type, url:m.url, storagePath:m.storage_path, thumbnail:m.thumbnail_url||'', thumbnailPath:m.thumbnail_storage_path||'', size:m.size_bytes || 0 })),
     playlists: playlists.map(p => {
       const playlistItems=items.filter(i=>i.playlist_id===p.id);
-      return {id:p.id,name:p.name,items:playlistItems.map(i=>i.media_id),durations:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.duration_seconds||10])),fits:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.fit_mode||'cover'])),screens:screens.filter(s=>s.playlist_id===p.id).length};
+      return {id:p.id,name:p.name,items:playlistItems.map(i=>i.media_id),durations:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.duration_seconds||10])),fits:Object.fromEntries(playlistItems.map(i=>[i.media_id,i.fit_mode||'cover'])),schedule:{startAt:p.start_at||'',endAt:p.end_at||'',days:Array.isArray(p.active_days)?p.active_days:[0,1,2,3,4,5,6],dailyStart:(p.daily_start||'00:00').slice(0,5),dailyEnd:(p.daily_end||'23:59').slice(0,5)},screens:screens.filter(s=>s.playlist_id===p.id).length};
     })
   };
 }
@@ -66,12 +68,13 @@ export async function loadCloudState() {
 export async function savePlaylist(playlist) {
   const userId=getStoredSession()?.user?.id;
   const isNew=playlist.id?.startsWith('p');
+  const schedule={start_at:playlist.schedule?.startAt||null,end_at:playlist.schedule?.endAt||null,active_days:playlist.schedule?.days?.length?playlist.schedule.days:[0,1,2,3,4,5,6],daily_start:playlist.schedule?.dailyStart||'00:00',daily_end:playlist.schedule?.dailyEnd||'23:59'};
   let id;
   if(isNew){
-    const saved=await api.insert('playlists',{name:playlist.name,workspace_id:_workspaceId,created_by:userId});
+    let saved;try{saved=await api.insert('playlists',{name:playlist.name,workspace_id:_workspaceId,created_by:userId,...schedule})}catch(error){if(!/start_at|active_days|daily_start/.test(String(error.message)))throw error;saved=await api.insert('playlists',{name:playlist.name,workspace_id:_workspaceId,created_by:userId})}
     id=saved[0].id;
   }else{
-    const updated=await api.update('playlists',`id=eq.${playlist.id}`,{name:playlist.name,updated_at:new Date().toISOString()});
+    let updated;try{updated=await api.update('playlists',`id=eq.${playlist.id}`,{name:playlist.name,...schedule,updated_at:new Date().toISOString()})}catch(error){if(!/start_at|active_days|daily_start/.test(String(error.message)))throw error;updated=await api.update('playlists',`id=eq.${playlist.id}`,{name:playlist.name,updated_at:new Date().toISOString()})}
     if(!updated?.length)throw new Error('Playlist não encontrada ou sem permissão para editar');
     id=playlist.id;
   }

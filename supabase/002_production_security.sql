@@ -9,6 +9,7 @@ create table if not exists public.workspaces (
   slug text not null unique check (slug ~ '^[a-z0-9][a-z0-9-]{1,62}$'),
   owner_id uuid not null references auth.users(id) on delete restrict,
   plan text not null default 'starter' check (plan in ('starter','pro','business')),
+  timezone text not null default 'America/Sao_Paulo',
   created_at timestamptz not null default now()
 );
 
@@ -22,8 +23,15 @@ create table if not exists public.workspace_members (
 
 alter table public.media_items add column if not exists workspace_id uuid references public.workspaces(id) on delete cascade;
 alter table public.media_items add column if not exists created_by uuid references auth.users(id) on delete set null;
+alter table public.media_items add column if not exists thumbnail_url text;
+alter table public.media_items add column if not exists thumbnail_storage_path text;
 alter table public.playlists add column if not exists workspace_id uuid references public.workspaces(id) on delete cascade;
 alter table public.playlists add column if not exists created_by uuid references auth.users(id) on delete set null;
+alter table public.playlists add column if not exists start_at timestamptz;
+alter table public.playlists add column if not exists end_at timestamptz;
+alter table public.playlists add column if not exists active_days smallint[] not null default array[0,1,2,3,4,5,6]::smallint[];
+alter table public.playlists add column if not exists daily_start time not null default '00:00';
+alter table public.playlists add column if not exists daily_end time not null default '23:59';
 alter table public.screens add column if not exists workspace_id uuid references public.workspaces(id) on delete cascade;
 alter table public.screens add column if not exists device_secret_hash text;
 alter table public.screens add column if not exists paired_at timestamptz;

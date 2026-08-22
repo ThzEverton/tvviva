@@ -1,0 +1,121 @@
+.modal.wide {
+  width: min(980px, 100%);
+}
+
+.playlist-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+  gap: 20px;
+}
+
+.picker-item .order-index {
+  display: none;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+}
+
+.picker-item.selected .order-index {
+  display: grid;
+}
+
+.picker-thumb video,
+.media-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-order {
+  display: grid;
+  gap: 7px;
+  min-height: 120px;
+  max-height: 360px;
+  margin-top: 8px;
+  overflow: auto;
+}
+
+.order-row {
+  display: grid;
+  grid-template-columns: 18px 22px 42px minmax(0, 1fr) 28px 28px;
+  gap: 7px;
+  align-items: center;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  cursor: grab;
+}
+
+.order-row:active { cursor: grabbing; }
+.order-row > svg { width: 16px; color: #92978f; }
+.order-row > b { font-size: 10px; text-align: center; }
+.order-row > span { overflow: hidden; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.order-row-thumb { width: 42px; height: 32px; border-radius: 6px; background: #191c19 center/cover; }
+.order-row button { width: 28px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: #f6f7f3; cursor: pointer; }
+
+.schedule-box {
+  margin-top: 8px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fafbf7;
+}
+
+.schedule-box summary { cursor: pointer; font-size: 11px; font-weight: 800; }
+.schedule-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-top: 14px; }
+.schedule-grid label { display: grid; gap: 5px; color: var(--muted); font-size: 9px; font-weight: 700; }
+.schedule-grid input { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 10px; }
+.weekdays { display: flex; gap: 7px; margin-top: 12px; }
+.weekdays input { position: absolute; opacity: 0; pointer-events: none; }
+.weekdays span { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 10px; cursor: pointer; }
+.weekdays input:checked + span { border-color: #9fbe3d; background: var(--lime); color: #111; font-weight: 800; }
+
+.playlist-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 7, 5, .88);
+  backdrop-filter: blur(8px);
+}
+
+.playlist-preview { width: min(1000px, 96vw); color: #fff; }
+.preview-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.preview-head strong { flex: 1; }
+.preview-head span { color: #b7c0b8; font-size: 12px; }
+.preview-head button { width: 38px; height: 38px; border: 0; border-radius: 10px; background: #fff; font-size: 24px; cursor: pointer; }
+.preview-stage { width: 100%; aspect-ratio: 16/9; overflow: hidden; border: 1px solid #ffffff22; border-radius: 14px; background: #050705; box-shadow: 0 30px 80px #0009; }
+.preview-stage img,.preview-stage video { width: 100%; height: 100%; display: block; }
+.preview-note { margin-top: 10px; color: #9da79f; font-size: 11px; text-align: center; }
+
+.upload-progress {
+  display: none;
+  position: relative;
+  height: 22px;
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e7e9e2;
+}
+.upload-progress.show { display: block; }
+.upload-progress span { display: block; width: 0; height: 100%; background: linear-gradient(90deg,#9fc63d,var(--lime)); transition: width .2s; }
+.upload-progress b { position: absolute; inset: 0; display: grid; place-items: center; color: #151915; font-size: 9px; }
+
+@media (max-width: 760px) {
+  .playlist-editor-grid { grid-template-columns: 1fr; }
+  .schedule-grid { grid-template-columns: 1fr 1fr; }
+  .playlist-order { max-height: 230px; }
+  .modal-actions { flex-wrap: wrap; }
+  .modal-actions button { min-height: 42px; }
+}
