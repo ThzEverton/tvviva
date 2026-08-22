@@ -1,5 +1,8 @@
 :root{--tv-lime:#d9ff62;--tv-white:#f4f7f1;--tv-muted:#929e94;--tv-line:rgba(255,255,255,.1)}
 body{background:#08100b}
+#media-layer,#transition-layer{z-index:0;opacity:0;transition:opacity .45s ease;background:#090c09}
+#media-layer.visible,#transition-layer.visible{z-index:1;opacity:1}
+#media-layer.incoming,#transition-layer.incoming{z-index:2;opacity:1}
 .pairing{padding:clamp(28px,4.2vh,58px) clamp(32px,5vw,78px);background:radial-gradient(circle at 15% 20%,rgba(48,94,62,.32),transparent 34%),radial-gradient(circle at 90% 80%,rgba(65,103,56,.14),transparent 27%),linear-gradient(120deg,#0d1a12 0%,#080e0a 58%,#060b08 100%)}
 .pairing:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 72%)}
 .pair-logo{position:relative;z-index:1;gap:11px;font-size:clamp(19px,1.7vw,27px)}
